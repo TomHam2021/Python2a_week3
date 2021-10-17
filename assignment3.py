@@ -1,4 +1,5 @@
 from typing import Any, Counter
+from timeit import timeit
 
 '''
 Tasks
@@ -65,29 +66,6 @@ class SimpleQueue:
             self._head = new_node
             self._tail = new_node
 
-    def appendleft(self, value: Any) -> None:
-        # Adds node with specified value at beginning of queue
-        new_node = Node(value)
-        try:                             # Assume queue is not empty
-            # sätter self._head till new_node.prev(den nya noden)
-            new_node.prev = self._head
-            self._head.next = new_node
-            self._tail = self._tail      # dvs ändras inte!
-        except AttributeError:           # Queue is empty
-            self._tail = new_node        # dvs new node blir både head & ..
-        self._head = new_node            # .. tail
-
-    def pop(self) -> Any:
-        # Removes node at end of queue and returns its value
-        value = self._tail.value         # värdet på sista noden
-        self._tail = self._tail.next     # ta ett steg till vänster = framåt
-        # om man redan står på _head är self._tail.next = None
-        try:                             # Delete reference to removed node
-            self._tail.prev = None       # detta går inte om ..
-        except AttributeError:           # Queue became empty
-            self._head = None
-        return value
-
     def popleft(self) -> Any:
         # Assignment 3: Implement this method
         # Removes node at beginning of queue and returns its value
@@ -98,57 +76,6 @@ class SimpleQueue:
         except AttributeError:
             self._head = None
         return value
-
-    def add(self, index: int, value: Any) -> None:
-        """Inserts a node with specified value at index"""
-        new_node = Node(value)
-        if self._head:                   # Queue is not empty
-            node = self._head
-            for _ in range(index):
-                node = node.prev
-            if node:                     # Inserting in middle or at beginning
-                if node.next:            # Inserting in middle of queue
-                    node.next.prev = new_node
-                    new_node.next = node.next
-                else:                    # Inserting at beginning of queue
-                    self._head = new_node
-                new_node.prev = node
-                node.next = new_node
-            else:                        # Inserting at end of queue
-                new_node.next = self._tail
-                self._tail.prev = new_node
-                self._tail = new_node
-        else:                            # Queue is empty
-            self._head = new_node
-            self._tail = new_node
-
-    def remove(self, index: int) -> None:
-        """Removes node at specified index"""
-        node = self._head
-        for _ in range(index):           # Find the node with specified index
-            node = node.prev
-        if node.prev:                    # Removing from middle or at beginning
-            node.prev.next = node.next
-        if node.next:                    # Removing from middle or end of queue
-            node.next.prev = node.prev
-        if node == self._head:           # Removing from beginning of queue
-            self._head = node.prev
-        if node == self._tail:           # Removing from end of queue
-            self._tail = node.next
-
-    def to_list(self):
-        """Returns a list with the queue node values"""
-        values = []
-        node = self._head
-        while node:                      # Iterate from head to tail
-            values.append(node.value)
-            node = node.prev
-        return values
-
-    def __str__(self):
-        """Returns a string representation of the queue"""
-        values = ", ".join(self.to_list())
-        return f"SimpleQueue([{values}])"
 
 
 def PrintQueue(my_queue: SimpleQueue):
@@ -172,33 +99,31 @@ def PrintQueue(my_queue: SimpleQueue):
     # print(f"This is the value of our node: {current_node.value}")
 
 
+def measure(function):
+    time = timeit(function, number=TIMES)
+    time_str = f"Execution time: {time/TIMES:.7f} seconds"
+    settings = f"TIMES: {TIMES}, {function.__name__})"
+    print(time_str, settings)
+
+
+def send_messages():
+    queue = SimpleQueue()
+    for x in range(TIMES):
+        queue.append('The')
+        queue.append('Trouth')
+        queue.append('Is')
+        queue.append('Out')
+        queue.append('There')
+
+
+TIMES = 500   # TIMES = antal gånger x 5, dvs 100x = 20
+
+
 def main():
 
-    my_queue = SimpleQueue()
-    my_queue.append(0)  # number value is not relevant
-    my_queue.append(1)
-    my_queue.append(2)
-    my_queue.append(3)
-    print("Entering loop that goes from head -> tail")
-    PrintQueue(my_queue)
-    print(">> Delete one from the start/head")
-    my_queue.popleft()
-    PrintQueue(my_queue)
-    print(">> Delete one from the start/head")
-    my_queue.popleft()
-    PrintQueue(my_queue)
-    print(">> Add one on the left")
-    my_queue.appendleft(1)
-    PrintQueue(my_queue)
-
-    # queue = SimpleQueue()
-    # queue.add(0, 'hej')
-    # queue.add(1, 'världen')
-    # queue.add(2, '!')
-    # print(queue)
-    # print(queue.pop())
-    # print(queue.pop())
-    # print(queue.pop())
+    time = timeit(send_messages, number=TIMES)
+    print(f"Execution time: {time/TIMES:.7f} seconds")
+    print(f"Number of messages sent: {TIMES*5}\n")
 
 
 if __name__ == "__main__":
